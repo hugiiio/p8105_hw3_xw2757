@@ -148,7 +148,11 @@ brfss_01 <-
 ```{r}
 brfss_01 %>% 
   ggplot(aes(x = year, y = avg_val, group=locationabbr, color = locationabbr)) +
-  geom_line()
+  geom_line()+
+  theme(legend.text = element_text(size = 4),
+        legend.title = element_text(size = 4),
+        legend.position = "right",
+        legend.box = "horizontal")
 ```
 
 
