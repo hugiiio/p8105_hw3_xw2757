@@ -72,7 +72,7 @@ instacart %>%
 
 ```{r}
 instacart %>% 
-  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
   group_by(aisle, product_name) %>% 
   summarize(n_buy=n()) %>% 
   filter(rank(desc(n_buy))<=3) %>% 
@@ -87,7 +87,7 @@ The most popular item in thepackaged vegetables fruits aisle are Organic Baby Sp
 instacart %>% 
   mutate(t_day_number = order_dow + 1) %>% 
   mutate(order_dow  = lubridate::wday(t_day_number, label = TRUE)) %>% 
-  filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
   group_by(product_name, order_dow) %>% 
   summarize(mean_hr = mean(order_hour_of_day)) %>% 
   pivot_wider(
@@ -128,12 +128,92 @@ brfss_clean %>%
   filter(n_locations >= 7) %>% 
   knitr::kable()
 ```
-In 2002, 
+In 2002, CT, FL, MA, NC, NJ, PA were observed at 7 or more locations. 
+In 2010, CA, CO, Fl, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA were observed at 7 or more locations. 
   
 
-  
-  and PA were observed at 7 or more locations, in 2010, 
+**Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. **
 
-Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
-Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+
+```{r}
+brfss_01 <- 
+  brfss_clean %>% 
+  group_by(year, locationabbr) %>% 
+  filter(response == "Excellent") %>% 
+  summarize(avg_val = mean(data_value), na.rm=TRUE)
+```
+
+**Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).**
+
+```{r}
+brfss_01 %>% 
+  ggplot(aes(x = year, y = avg_val, group=locationabbr, color=locationabbr)) +
+  geom_line()
+```
+
+
+**Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.**
+```{r}
+data_response_NY_06_10 <- 
+   brfss_clean %>% 
+   filter(year %in% c("2006", "2010"), locationabbr == "NY") %>% 
+  group_by(locationdesc, response) %>% 
+  ggplot(aes(x = data_value, fill = response))+
+  geom_histogram(position = "dodge", binwidth = 8)+
+  facet_grid(~year)+
+  labs(
+    title = "  Distribution of data_value for responses in NY"
+  )
+  
+```
+
+
+##Problem 3
+
+**Loading data**
+```{r}
+accelerometer<- 
+  read_csv("accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(wknd = ifelse(day %in% c("Saturdat", "Sunday"), "Weekend", "Weekday")) %>% 
+  pivot_longer(activity_1:activity_1440, names_to = "minute", names_prefix = "activity_", values_to = "activity") %>% 
+  select(wknd, everything()) %>% 
+  mutate(minute = as.numeric(minute))
+```
+
+**Describe the resulting dataset (e.g. what variables exist, how many observations, etc).**
+The resulting data set "activity" contains the following variables: `r names(accelerometer)`, with a total of `r nrow(accelerometer)` observation. 
+
+**Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?**
+
+```{r}
+accelerometer %>% 
+  group_by(wknd, day_id) %>% 
+  summarize(total_activity_day = sum(activity)) %>% 
+  knitr::kable()
+
+accelerometer %>% 
+  group_by(wknd, day_id) %>% 
+  summarize(total_activity_day = sum(activity)) %>% 
+  ggplot(aes(x = day_id, y = total_activity_day))+
+  geom_line()
+
+accelerometer %>% 
+  group_by(wknd, day_id) %>% 
+  summarize(total_activity_day = sum(activity)) %>% 
+  ggplot(aes(x = day_id, y = total_activity_day, color = wknd))+
+  geom_line()
+```
+^can't find apparent trend of overall total day activity. Weekday total activity fluctuates but weekend total activity appears to resembles a downward trend. 
+
+**Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.**
+
+```{r}
+accelerometer%>% 
+  group_by(day, day_id) %>% 
+  ggplot(aes(x = minute, y = activity, group = day_id, color = day)) +
+  geom_line(alpha=0.5)
+```
+The plot shows that the subject is less active during nighttime, more activities during the day, and the most active time tends to be evening, and tends to be on Fridays. 
+
 
