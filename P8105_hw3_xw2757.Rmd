@@ -59,11 +59,11 @@ There are a total of `r count(distinct(instacart, aisle))` aisles, the most item
 ```{r}
 instacart %>% 
   group_by(aisle) %>% 
-  filter(n()>10000) %>% 
+  filter(n() > 10000) %>% 
   summarize(n_items = n()) %>%
   ggplot(aes(x = aisle, y = n_items)) +
-  geom_bar(stat = "identity") + coord_flip()+ 
-  theme(axis.text.y = element_text(size = 6, hjust = 1, vjust=0.5))
+  geom_bar(stat = "identity") + coord_flip() + 
+  theme(axis.text.y = element_text(size = 6, hjust = 1, vjust = 0.5))
 ```
 
 
@@ -140,14 +140,14 @@ brfss_01 <-
   brfss_clean %>% 
   group_by(year, locationabbr) %>% 
   filter(response == "Excellent") %>% 
-  summarize(avg_val = mean(data_value), na.rm=TRUE)
+  summarize(avg_val = mean(data_value), na.rm = TRUE)
 ```
 
 **Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).**
 
 ```{r}
 brfss_01 %>% 
-  ggplot(aes(x = year, y = avg_val, group=locationabbr, color=locationabbr)) +
+  ggplot(aes(x = year, y = avg_val, group=locationabbr, color = locationabbr)) +
   geom_line()
 ```
 
@@ -158,9 +158,9 @@ data_response_NY_06_10 <-
    brfss_clean %>% 
    filter(year %in% c("2006", "2010"), locationabbr == "NY") %>% 
   group_by(locationdesc, response) %>% 
-  ggplot(aes(x = data_value, fill = response))+
-  geom_histogram(position = "dodge", binwidth = 8)+
-  facet_grid(~year)+
+  ggplot(aes(x = data_value, fill = response)) +
+  geom_histogram(position = "dodge", binwidth = 8) +
+  facet_grid(~year) +
   labs(
     title = "  Distribution of data_value for responses in NY"
   )
@@ -172,7 +172,7 @@ data_response_NY_06_10 <-
 
 **Loading data**
 ```{r}
-accelerometer<- 
+accelerometer <- 
   read_csv("accel_data.csv") %>% 
   janitor::clean_names() %>% 
   mutate(wknd = ifelse(day %in% c("Saturdat", "Sunday"), "Weekend", "Weekday")) %>% 
@@ -195,13 +195,13 @@ accelerometer %>%
 accelerometer %>% 
   group_by(wknd, day_id) %>% 
   summarize(total_activity_day = sum(activity)) %>% 
-  ggplot(aes(x = day_id, y = total_activity_day))+
+  ggplot(aes(x = day_id, y = total_activity_day)) +
   geom_line()
 
 accelerometer %>% 
   group_by(wknd, day_id) %>% 
   summarize(total_activity_day = sum(activity)) %>% 
-  ggplot(aes(x = day_id, y = total_activity_day, color = wknd))+
+  ggplot(aes(x = day_id, y = total_activity_day, color = wknd)) +
   geom_line()
 ```
 ^can't find apparent trend of overall total day activity. Weekday total activity fluctuates but weekend total activity appears to resembles a downward trend. 
@@ -209,10 +209,10 @@ accelerometer %>%
 **Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.**
 
 ```{r}
-accelerometer%>% 
+accelerometer %>% 
   group_by(day, day_id) %>% 
   ggplot(aes(x = minute, y = activity, group = day_id, color = day)) +
-  geom_line(alpha=0.5)
+  geom_line(alpha = 0.5)
 ```
 The plot shows that the subject is less active during nighttime, more activities during the day, and the most active time tends to be evening, and tends to be on Fridays. 
 
